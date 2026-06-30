@@ -1,0 +1,6 @@
+{
+  "name": "Grand Fauji Restaurant",
+  "description": "Premium cinematic restaurant website with animations",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
