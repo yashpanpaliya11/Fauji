@@ -28,39 +28,45 @@ if (!fs.existsSync(imgDir)) {
 }
 
 async function downloadFile(url: string, dest: string): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const file = fs.createWriteStream(dest);
-    https.get(url, (response) => {
-      if (response.statusCode !== 200) {
-        reject(new Error(`Failed to download ${url}: ${response.statusCode}`));
-        return;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15000); // 15s timeout
+  try {
+    const response = await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': '*/*'
       }
-      response.pipe(file);
-      file.on('finish', () => {
-        file.close();
-        resolve();
-      });
-    }).on('error', (err) => {
-      fs.unlink(dest, () => {});
-      reject(err);
     });
-  });
+    clearTimeout(timeout);
+
+    if (!response.ok) {
+      console.warn(`Warning: Failed to download ${url}: HTTP ${response.status}`);
+      return;
+    }
+
+    const arrayBuffer = await response.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    fs.writeFileSync(dest, buffer);
+  } catch (error) {
+    clearTimeout(timeout);
+    console.warn(`Warning: Error downloading ${url}:`, error instanceof Error ? error.message : error);
+  }
 }
 
 async function run() {
   try {
     console.log('Downloading video...');
-    await downloadFile(url, dest);
-    console.log('Video downloaded successfully');
+    const videoPromise = downloadFile(url, dest).then(() => console.log('Video downloaded successfully'));
 
     console.log('Downloading images...');
-    for (let i = 0; i < IMAGES.length; i++) {
-      const imgUrl = IMAGES[i];
+    const imagePromises = IMAGES.map((imgUrl, i) => {
       const ext = path.extname(new URL(imgUrl).pathname) || '.png';
       const imgDest = path.join(imgDir, `loading-img-${i + 1}${ext}`);
-      await downloadFile(imgUrl, imgDest);
-      console.log(`Downloaded image ${i + 1}/${IMAGES.length}`);
-    }
+      return downloadFile(imgUrl, imgDest).then(() => console.log(`Downloaded image ${i + 1}/${IMAGES.length}`));
+    });
+
+    await Promise.all([videoPromise, ...imagePromises]);
     console.log('All downloads finished successfully.');
   } catch (err) {
     console.error('Download error:', err);
