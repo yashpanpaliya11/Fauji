@@ -3,17 +3,17 @@ import { useEffect, useState } from "react";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 
 const IMAGES = [
-  "https://i.ibb.co/VYY9xYj3/Screenshot-2026-06-29-at-11-40-23-PM.png",
-  "https://i.ibb.co/TxBn1Rgd/Screenshot-2026-06-29-at-11-40-32-PM.png",
-  "https://i.ibb.co/67ZTNPdq/Screenshot-2026-06-29-at-11-40-40-PM.png",
-  "https://i.ibb.co/hxphDgz9/Screenshot-2026-06-29-at-11-40-47-PM.png",
-  "https://i.ibb.co/tw3SSnm7/Screenshot-2026-06-29-at-11-38-15-PM.png",
-  "https://i.ibb.co/LzwGbDt5/Screenshot-2026-06-29-at-11-38-12-PM.png",
-  "https://i.ibb.co/pr4pzmfk/Screenshot-2026-06-29-at-11-38-09-PM.png",
-  "https://i.ibb.co/s9NcSDkP/Screenshot-2026-06-29-at-11-37-21-PM.png"
+  "/images/loading-img-1.png",
+  "/images/loading-img-2.png",
+  "/images/loading-img-3.png",
+  "/images/loading-img-4.png",
+  "/images/loading-img-5.png",
+  "/images/loading-img-6.png",
+  "/images/loading-img-7.png",
+  "/images/loading-img-8.png"
 ];
 
-const VIDEO_URL = "https://www.image2url.com/r2/default/videos/1782746669499-a5c843b2-2f7e-4ebc-909c-620ab3d88b27.mp4";
+const VIDEO_URL = "/videos/hero-background.mp4";
 const TOTAL_ASSETS = IMAGES.length + 1;
 
 export function Loader({ onComplete }: { onComplete: () => void }) {
@@ -24,13 +24,30 @@ export function Loader({ onComplete }: { onComplete: () => void }) {
     // Preload Video
     const video = document.createElement("video");
     video.src = VIDEO_URL;
+    video.playsInline = true;
+    video.muted = true;
+    let videoLoaded = false;
+    
     video.oncanplaythrough = () => {
-      setLoadedCount((prev) => prev + 1);
+      if (!videoLoaded) {
+        videoLoaded = true;
+        setLoadedCount((prev) => prev + 1);
+      }
     };
     video.onerror = () => {
-      setLoadedCount((prev) => prev + 1);
+      if (!videoLoaded) {
+        videoLoaded = true;
+        setLoadedCount((prev) => prev + 1);
+      }
     };
     video.load();
+
+    // Fallback: If after 5 seconds things are still loading, force finish.
+    const fallback = setTimeout(() => {
+      setLoadedCount(TOTAL_ASSETS);
+    }, 5000);
+
+    return () => clearTimeout(fallback);
   }, []);
 
   const handleImageLoad = (url: string) => {
