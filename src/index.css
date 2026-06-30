@@ -106,3 +106,8 @@ body {
   z-index: 1;
   pointer-events: none;
 }
+
+.mask-image-radial-gradient {
+  mask-image: radial-gradient(circle at center, black 0%, transparent 80%);
+  -webkit-mask-image: radial-gradient(circle at center, black 0%, transparent 80%);
+}
