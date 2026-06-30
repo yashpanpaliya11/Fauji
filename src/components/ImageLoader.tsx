@@ -19,6 +19,13 @@ export function ImageLoader({
   ...props 
 }: ImageLoaderProps) {
   const [isLoaded, setIsLoaded] = useState(false);
+  const imgRef = React.useRef<HTMLImageElement>(null);
+
+  React.useEffect(() => {
+    if (imgRef.current?.complete) {
+      setIsLoaded(true);
+    }
+  }, [src]);
 
   return (
     <div 
@@ -38,6 +45,7 @@ export function ImageLoader({
         )}
       />
       <motion.img
+        ref={imgRef}
         src={src}
         alt={alt}
         className={cn("w-full h-full object-cover", imageClassName)}
@@ -49,6 +57,7 @@ export function ImageLoader({
         }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         onLoad={() => setIsLoaded(true)}
+        onError={() => setIsLoaded(true)}
         loading="lazy"
         decoding="async"
         {...props}

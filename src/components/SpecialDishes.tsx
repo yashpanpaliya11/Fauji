@@ -120,6 +120,7 @@ export function SpecialDishes() {
                   alt={dish.name}
                   containerClassName="w-full h-full"
                   imageClassName="transition-transform duration-1000 group-hover:scale-110"
+                  loading="eager"
                 />
               </div>
               
